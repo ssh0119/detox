@@ -4,7 +4,8 @@ import 'package:detox/requestServer.dart';
 import 'package:flutter/material.dart';
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, required this.title})
+      : super(key: key); // Key를 nullable로 변경
   final String title;
 
   @override
@@ -34,9 +35,9 @@ class _MyHomePageState extends State<MyHomePage> {
   String textValSalution = "Please enter your salutation.";
   String textValName = "Please enter your name.";
   String textValEmail = "Please enter your email.";
-  String textValEmail2 = "PLease enter valid email";
+  String textValEmail2 = "Please enter valid email";
 
-  String salutation, name, email = "";
+  String salutation = "", name = "", email = "";
 
   @override
   void initState() {
@@ -59,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  header() {
+  AppBar header() {
     return AppBar(
       title: Row(
         children: <Widget>[
@@ -70,7 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  content() {
+  Widget content() {
     return SingleChildScrollView(
       child: Container(
         child: Column(
@@ -84,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  logo() {
+  Widget logo() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
       child: Image.asset(
@@ -98,23 +99,22 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget photoOfProduct() {
     return AspectRatio(
+      aspectRatio: 2,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
         child: Image.asset(PathImage().pathPicture, fit: BoxFit.contain),
-        // Image.network(
-        //   "https://www.kinohimitsu.com/en/images/wellness_smooth_d_2/1.jpg",
-        // ),
       ),
-      aspectRatio: 2,
     );
   }
 
   Widget form() {
     return Form(
       key: _formKey,
-      autovalidate: _autoValidate,
+      autovalidateMode: _autoValidate
+          ? AutovalidateMode.always
+          : AutovalidateMode.disabled, // autovalidateMode로 변경
       child: Container(
-        margin: EdgeInsets.fromLTRB(15, 8, 15, 8),
+        margin: const EdgeInsets.fromLTRB(15, 8, 15, 8),
         child: Column(
           children: <Widget>[
             salutationField(),
@@ -138,9 +138,9 @@ class _MyHomePageState extends State<MyHomePage> {
       decoration: InputDecoration(
           labelText: textSalutation,
           hintText: textEgSalutation,
-          contentPadding: EdgeInsets.all(8.0)),
+          contentPadding: const EdgeInsets.all(8.0)),
       validator: (text) => validationSalutation(text),
-      onSaved: (text) => salutation = text,
+      onSaved: (text) => salutation = text ?? "",
       onFieldSubmitted: (_) {
         fieldFocusChange(context, _focusNodeSalutation, _focusNodeName);
       },
@@ -157,9 +157,9 @@ class _MyHomePageState extends State<MyHomePage> {
       decoration: InputDecoration(
           labelText: textName,
           hintText: textEgName,
-          contentPadding: EdgeInsets.all(8.0)),
+          contentPadding: const EdgeInsets.all(8.0)),
       validator: (text) => validationName(text),
-      onSaved: (text) => name = text,
+      onSaved: (text) => name = text ?? "",
       onFieldSubmitted: (_) {
         fieldFocusChange(context, _focusNodeName, _focusNodeEmail);
       },
@@ -176,17 +176,17 @@ class _MyHomePageState extends State<MyHomePage> {
       decoration: InputDecoration(
           labelText: textEmail,
           hintText: textEgEmail,
-          contentPadding: EdgeInsets.all(8.0)),
+          contentPadding: const EdgeInsets.all(8.0)),
       validator: (text) => validationEmail(text),
-      onSaved: (text) => email = text,
+      onSaved: (text) => email = text ?? "",
     );
   }
 
-  RaisedButton interestButton() {
-    return RaisedButton(
+  Widget interestButton() {
+    return ElevatedButton(
       onPressed: () {
-        if (_formKey.currentState.validate()) {
-          _formKey.currentState.save();
+        if (_formKey.currentState!.validate()) {
+          _formKey.currentState!.save();
           interestRequest(salutation, name, email, context);
         } else {
           setState(() {
@@ -194,16 +194,18 @@ class _MyHomePageState extends State<MyHomePage> {
           });
         }
       },
-      color: Colors.green,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.green,
+      ),
       child: Text(
         textButton,
-        style: TextStyle(color: Colors.white),
+        style: const TextStyle(color: Colors.white),
       ),
     );
   }
 
-  SizedBox sizedBox() {
-    return SizedBox(
+  Widget sizedBox() {
+    return const SizedBox(
       height: 10.0,
     );
   }
@@ -214,25 +216,25 @@ class _MyHomePageState extends State<MyHomePage> {
     FocusScope.of(context).requestFocus(nextFocus);
   }
 
-  validationSalutation(String text) {
-    if (text.isEmpty) {
+  String? validationSalutation(String? text) {
+    if (text == null || text.isEmpty) {
       return textValSalution;
     }
     return null;
   }
 
-  validationName(String text) {
-    if (text.isEmpty) {
+  String? validationName(String? text) {
+    if (text == null || text.isEmpty) {
       return textValName;
     }
     return null;
   }
 
-  validationEmail(String text) {
-    Pattern pattern =
+  String? validationEmail(String? text) {
+    final pattern =
         r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-    RegExp regex = new RegExp(pattern);
-    if (text.isEmpty) {
+    final regex = RegExp(pattern);
+    if (text == null || text.isEmpty) {
       return textValEmail;
     } else if (!regex.hasMatch(text)) {
       return textValEmail2;
@@ -240,30 +242,32 @@ class _MyHomePageState extends State<MyHomePage> {
     return null;
   }
 
-  interestRequest(String salutation, String name, String email,
+  void interestRequest(String salutation, String name, String email,
       BuildContext context) async {
-    var result = await RequestServer().makeGetRequest(salutation, name, email);
-    if (result.statusCode == 200) {
-      Map<String, dynamic> resultDecode = jsonDecode(result.body);
-      print(resultDecode);
-      var flag = resultDecode["flag"];
-      var message = resultDecode["message"];
-      print(flag);
-      print(message);
+    final result =
+        await RequestServer().makeGetRequest(salutation, name, email);
+
+    if (result != null && result.statusCode == 200) {
+      final Map<String, dynamic> resultDecode = jsonDecode(result.body);
+      final flag = resultDecode["flag"];
+      final message = resultDecode["message"];
       if (flag == 1) {
         showResult(context, message);
       }
-      // showToast(context, message);
+    } else {
+      // 요청 실패 처리
+      showResult(context, "Failed to connect to the server. Please try again.");
     }
   }
 
-  showResult(BuildContext context, String message) {
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            content: Text(message),
-          );
-        });
+  void showResult(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Text(message),
+        );
+      },
+    );
   }
 }
